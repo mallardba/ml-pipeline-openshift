@@ -1,0 +1,50 @@
+# Include production requirements
+-r requirements.txt
+
+# Testing Framework
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0  # for testing FastAPI
+
+# Code Quality & Linting
+ruff>=0.0.280
+black>=23.7.0
+mypy>=1.5.0
+pre-commit>=3.3.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.2.0
+mkdocstrings[python]>=0.22.0
+
+# Development Tools
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+ipykernel>=6.25.0
+notebook>=7.0.0
+
+# Debugging & Profiling
+pdbpp>=0.10.0
+memory-profiler>=0.61.0
+line-profiler>=4.1.0
+
+# Kubernetes/OpenShift Development
+kubernetes>=27.2.0
+openshift>=0.13.0
+
+# Additional ML Development Tools
+wandb>=0.15.0  # experiment tracking
+tensorboard>=2.13.0  # training visualization
+optuna>=3.3.0  # hyperparameter optimization
+
+# Data Visualization (for notebooks/analysis)
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# Type stubs for better IDE support
+types-requests>=2.31.0
+types-PyYAML>=6.0.0
+types-click>=8.0.0
