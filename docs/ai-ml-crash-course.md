@@ -116,52 +116,247 @@ Choosing the right algorithm depends on several factors:
 
 #### 1. Linear Regression
 
+**Deep Dive into Linear Regression:**
+
 Linear regression is like the foundation of machine learning - it's the first algorithm most people learn, and for good reason! Imagine you're trying to predict house prices. You notice that bigger houses tend to cost more, and houses in better neighborhoods also cost more. Linear regression takes this intuitive idea and makes it mathematical, finding the best straight line through your data points.
 
 What makes linear regression so powerful is its simplicity and interpretability. When you see a coefficient of 0.5 for house size, you immediately know that for every additional square foot, the price increases by $500 (if your data is in thousands). It's like having a crystal ball that shows you exactly how each factor influences your outcome.
 
 But here's the beautiful thing about linear regression - despite its simplicity, it often performs surprisingly well. Many real-world relationships are approximately linear, and even when they're not, linear regression can serve as an excellent baseline. It's the algorithm that taught us that sometimes the simplest explanation is the best one.
 
-**Purpose**: Predict continuous values (regression problems)
-**Mathematical Foundation**: 
-- Assumes linear relationship: y = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ + ε
-- Minimizes sum of squared residuals: RSS = Σ(yᵢ - ŷᵢ)²
-- Uses Ordinary Least Squares (OLS) to find optimal coefficients
+**What Linear Regression Does:**
+Linear regression finds the best straight line (or hyperplane in higher dimensions) that minimizes the sum of squared differences between predicted and actual values. It assumes that the relationship between input features and the target variable can be expressed as a linear combination of the features.
 
-**How it works**: 
-- Finds the best line (or hyperplane) through data points
-- Minimizes the distance between predicted and actual values
-- Assumes linear relationship between features and target
+**Why Linear Regression Works:**
+- **Simplicity**: Easy to understand and implement
+- **Interpretability**: Each coefficient has a clear meaning
+- **Stability**: Less prone to overfitting than complex models
+- **Baseline**: Provides a good starting point for comparison
+- **Statistical Foundation**: Well-established theoretical properties
 
-**Key Assumptions**:
-- Linear relationship between features and target
-- Independence of observations
-- Homoscedasticity (constant variance of errors)
-- Normal distribution of errors
-- No multicollinearity (features not highly correlated)
+**How Linear Regression Works:**
 
-**Advantages**:
-- Simple and interpretable
-- Fast training and prediction
-- No hyperparameters to tune
-- Works well with small datasets
-- Provides confidence intervals
+1. **Mathematical Foundation**:
+   - Model: y = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ + ε
+   - β₀: Intercept (baseline value when all features are zero)
+   - βᵢ: Coefficients (how much y changes per unit change in xᵢ)
+   - ε: Error term (unexplained variation)
 
-**Disadvantages**:
-- Assumes linear relationships
-- Sensitive to outliers
-- Can't handle non-linear patterns
-- Requires feature scaling for meaningful coefficients
+2. **Ordinary Least Squares (OLS)**:
+   - Minimizes: RSS = Σ(yᵢ - ŷᵢ)²
+   - Closed-form solution: β = (XᵀX)⁻¹Xᵀy
+   - Finds coefficients that minimize sum of squared residuals
 
-**When to use**:
-- Linear relationship exists
-- Need interpretable results
+3. **Gradient Descent Alternative**:
+   - For large datasets or when XᵀX is not invertible
+   - Iteratively updates coefficients: β = β - α∇RSS
+   - Learning rate α controls step size
+
+**Strengths:**
+- **Interpretability**: Each coefficient tells you the effect of one feature
+- **Speed**: Very fast training and prediction
+- **Stability**: Less sensitive to small changes in data
+- **No Hyperparameters**: No tuning required
+- **Statistical Properties**: Confidence intervals, p-values, R²
+- **Baseline Performance**: Often surprisingly good
+- **Memory Efficient**: Stores only coefficients
+
+**Weaknesses:**
+- **Linear Assumption**: Can't capture non-linear relationships
+- **Outlier Sensitivity**: Extreme values can skew results
+- **Multicollinearity**: Correlated features cause unstable coefficients
+- **Feature Scaling**: Coefficients depend on feature scales
+- **Limited Complexity**: Can't model complex interactions
+- **Assumption Violations**: Breaks down when assumptions aren't met
+
+**When to Use Linear Regression:**
+- Linear relationship exists between features and target
+- Need interpretable results (business decisions, regulations)
 - Small to medium datasets
 - Baseline model for comparison
+- When simplicity is preferred over complexity
+- Statistical inference is important
+
+**When NOT to Use Linear Regression:**
+- Non-linear relationships (use polynomial regression or other algorithms)
+- High-dimensional data with many features
+- When maximum accuracy is required
+- Complex interactions between features
+- When assumptions are severely violated
+
+**Key Assumptions and Their Impact:**
+
+1. **Linear Relationship**: 
+   - Violation: Model will be biased and inaccurate
+   - Solution: Transform features or use non-linear models
+
+2. **Independence**: 
+   - Violation: Standard errors will be wrong
+   - Solution: Use time series models or clustered standard errors
+
+3. **Homoscedasticity**: 
+   - Violation: Confidence intervals will be wrong
+   - Solution: Use weighted least squares or robust standard errors
+
+4. **Normal Errors**: 
+   - Violation: Affects confidence intervals and hypothesis tests
+   - Solution: Transform target variable or use robust methods
+
+5. **No Multicollinearity**: 
+   - Violation: Coefficients become unstable and uninterpretable
+   - Solution: Remove correlated features or use regularization
 
 ```python
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Deep Dive into Linear Regression Implementation:
+#
+# The LinearRegression class in sklearn uses:
+# - Ordinary Least Squares (OLS) by default
+# - Singular Value Decomposition (SVD) for numerical stability
+# - Handles multiple features automatically
+# - Provides coefficients and intercept
+
+# Create sample data
+np.random.seed(42)
+X = np.random.randn(100, 1) * 10  # Single feature
+y = 2 * X.flatten() + 3 + np.random.randn(100) * 2  # Linear relationship with noise
+
+# Deep Dive into Model Creation:
+#
+# LinearRegression parameters:
+# - fit_intercept=True: Whether to calculate intercept (usually yes)
+# - normalize=False: sklearn recommends using StandardScaler instead
+# - copy_X=True: Whether to copy X (memory vs speed trade-off)
+# - n_jobs=None: Number of parallel jobs (for multiple targets)
+model = LinearRegression(fit_intercept=True)
+
+# Deep Dive into Training Process:
+#
+# 1. **Data Preparation**: 
+#    - X should be 2D array (samples, features)
+#    - y should be 1D array (samples,) or 2D for multiple targets
+#    - No missing values allowed
+#
+# 2. **Fitting Process**:
+#    - Computes XᵀX and Xᵀy matrices
+#    - Uses SVD to solve β = (XᵀX)⁻¹Xᵀy
+#    - Stores coefficients and intercept
+model.fit(X, y)
+
+# Deep Dive into Predictions:
+#
+# Prediction process:
+# - For each sample: ŷ = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ
+# - Returns predictions for all input samples
+# - Same shape as input (samples,)
+predictions = model.predict(X)
+
+# Deep Dive into Model Properties:
+#
+# Coefficients (β₁, β₂, ..., βₙ):
+# - Show the effect of each feature on target
+# - Units: change in target per unit change in feature
+# - Sign indicates direction of relationship
+print(f"Coefficients: {model.coef_}")  # Should be close to 2
+
+# Intercept (β₀):
+# - Baseline value when all features are zero
+# - Often not meaningful if features can't be zero
+print(f"Intercept: {model.intercept_}")  # Should be close to 3
+
+# Deep Dive into Evaluation:
+#
+# Mean Squared Error (MSE):
+# - Average of squared differences between predicted and actual
+# - Units: squared units of target variable
+# - Penalizes large errors more than small ones
+mse = mean_squared_error(y, predictions)
+print(f"MSE: {mse:.2f}")
+
+# R-squared (R²):
+# - Proportion of variance in target explained by model
+# - Range: 0 to 1 (higher is better)
+# - R² = 1 - (SS_res / SS_tot)
+# - SS_res = sum of squared residuals
+# - SS_tot = sum of squared deviations from mean
+r2 = r2_score(y, predictions)
+print(f"R²: {r2:.2f}")
+
+# Deep Dive into Residual Analysis:
+#
+# Residuals = y - ŷ
+# - Should be randomly distributed around zero
+# - No patterns indicate good model fit
+# - Patterns suggest violated assumptions
+residuals = y - predictions
+
+# Deep Dive into Feature Importance:
+#
+# For linear regression, feature importance is coefficient magnitude
+# - Larger |coefficient| = more important feature
+# - But coefficients depend on feature scales
+# - Standardize features for fair comparison
+feature_importance = np.abs(model.coef_)
+print(f"Feature importance: {feature_importance}")
+
+# Deep Dive into Confidence Intervals:
+#
+# sklearn doesn't provide confidence intervals directly
+# Use statsmodels for statistical inference:
+from statsmodels.api import OLS
+import statsmodels.api as sm
+
+# Add constant for intercept
+X_with_const = sm.add_constant(X)
+ols_model = OLS(y, X_with_const).fit()
+
+# Get confidence intervals
+conf_int = ols_model.conf_int()
+print(f"Confidence intervals:\n{conf_int}")
+
+# Get p-values for hypothesis testing
+p_values = ols_model.pvalues
+print(f"P-values: {p_values}")
+
+# Deep Dive into Assumptions Checking:
+#
+# 1. **Linearity**: Plot residuals vs fitted values
+#    - Should show random scatter around zero
+#    - Patterns indicate non-linearity
+plt.figure(figsize=(10, 6))
+plt.subplot(1, 2, 1)
+plt.scatter(predictions, residuals)
+plt.xlabel('Fitted Values')
+plt.ylabel('Residuals')
+plt.title('Residuals vs Fitted Values')
+plt.axhline(y=0, color='r', linestyle='--')
+
+# 2. **Normality**: Q-Q plot of residuals
+#    - Points should follow straight line
+#    - Deviations indicate non-normal errors
+plt.subplot(1, 2, 2)
+from scipy import stats
+stats.probplot(residuals, dist="norm", plot=plt)
+plt.title('Q-Q Plot of Residuals')
+plt.show()
+
+# Deep Dive into Model Interpretation:
+#
+# Example interpretation:
+# - Coefficient = 2.1 means: "For every 1-unit increase in X, 
+#   y increases by 2.1 units on average"
+# - Intercept = 3.2 means: "When X = 0, predicted y = 3.2"
+# - R² = 0.85 means: "85% of variance in y is explained by X"
+
+print(f"\nModel Interpretation:")
+print(f"- For every 1-unit increase in X, y increases by {model.coef_[0]:.2f} units")
+print(f"- When X = 0, predicted y = {model.intercept_:.2f}")
+print(f"- {r2*100:.1f}% of variance in y is explained by the model")
+```
 import numpy as np
 
 # Basic usage
@@ -189,96 +384,303 @@ importance_df = pd.DataFrame({
 
 #### 2. Logistic Regression
 
+**Deep Dive into Logistic Regression:**
+
 If linear regression is the foundation, then logistic regression is the elegant evolution that handles one of the most common problems in machine learning: classification. Picture this - you're building a spam filter. Linear regression might predict values like 0.3 or 1.7, but what does 1.7 mean for "spam" or "not spam"? Logistic regression solves this beautifully by squashing any input into a probability between 0 and 1.
 
 The magic of logistic regression lies in the sigmoid function - that beautiful S-shaped curve that transforms any number into a probability. It's like having a translator that converts the language of continuous numbers into the language of probabilities. When the sigmoid outputs 0.8, you know there's an 80% chance this email is spam.
 
 What I love about logistic regression is how it bridges the gap between simplicity and sophistication. It's still linear in its core (the relationship between features and log-odds is linear), but it handles the non-linear nature of probabilities with elegance. It's the algorithm that taught us that you don't always need complex models to solve complex-looking problems.
 
-**Purpose**: Binary and multiclass classification (yes/no, spam/not spam, image categories)
-**Mathematical Foundation**:
-- Uses logistic function (sigmoid) to map linear combinations to probabilities
-- Formula: P(y=1|x) = 1 / (1 + e^(-z)) where z = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ
-- Decision boundary: Linear in feature space
-- Loss function: Cross-entropy (log-likelihood)
+**What Logistic Regression Does:**
+Logistic regression models the probability that an observation belongs to a particular class. It uses the logistic (sigmoid) function to transform a linear combination of features into probabilities between 0 and 1. Unlike linear regression which predicts continuous values, logistic regression predicts probabilities and then makes classification decisions based on these probabilities.
 
-**How it works**:
-1. **Linear Combination**: Calculate z = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ
-2. **Sigmoid Transformation**: Apply σ(z) = 1 / (1 + e^(-z)) to get probabilities
-3. **Decision Making**: Classify as positive if P(y=1|x) > 0.5 (or custom threshold)
-4. **Optimization**: Use maximum likelihood estimation or gradient descent
+**Why Logistic Regression Works:**
+- **Probabilistic Output**: Provides confidence scores, not just binary predictions
+- **Linear Decision Boundary**: Simple, interpretable decision surface
+- **Maximum Likelihood**: Uses sound statistical principles for optimization
+- **Sigmoid Function**: Smoothly maps any real number to (0,1) probability range
+- **Log-Odds Linearity**: Maintains linear relationship in log-odds space
 
-**Key Concepts**:
-- **Odds Ratio**: e^(βᵢ) represents how odds change with one unit increase in xᵢ
-- **Log-Odds**: ln(P/(1-P)) = β₀ + β₁x₁ + ... + βₙxₙ (linear relationship)
-- **Decision Boundary**: Linear hyperplane in feature space
-- **Multiclass**: Uses One-vs-Rest or Multinomial approaches
+**How Logistic Regression Works:**
 
-**Advantages**:
-- Probabilistic output (confidence scores)
-- Interpretable coefficients
-- No assumptions about feature distributions
-- Works well with small datasets
-- Handles both linear and non-linear relationships (with feature engineering)
+1. **Mathematical Foundation**:
+   - Linear combination: z = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ
+   - Sigmoid transformation: P(y=1|x) = 1 / (1 + e^(-z))
+   - Log-odds: ln(P/(1-P)) = z (linear relationship)
+   - Decision rule: Classify as positive if P(y=1|x) > threshold
 
-**Disadvantages**:
-- Assumes linear relationship between features and log-odds
-- Sensitive to outliers
-- Requires feature scaling for meaningful coefficients
-- Can struggle with non-linear decision boundaries
+2. **Sigmoid Function Properties**:
+   - Range: (0, 1) - perfect for probabilities
+   - Monotonic: Always increasing
+   - Smooth: Differentiable everywhere
+   - Symmetric: σ(-z) = 1 - σ(z)
+   - S-shaped: Steepest slope at z = 0
 
-**When to use**:
-- Binary or multiclass classification
-- Need probabilistic predictions
-- Want interpretable model
+3. **Optimization Process**:
+   - Uses Maximum Likelihood Estimation (MLE)
+   - Minimizes cross-entropy loss: -Σ[y*log(p) + (1-y)*log(1-p)]
+   - Gradient descent or Newton-Raphson methods
+   - No closed-form solution (unlike linear regression)
+
+**Strengths:**
+- **Probabilistic Output**: Provides confidence scores for decisions
+- **Interpretability**: Coefficients have clear meaning (log-odds ratios)
+- **No Distribution Assumptions**: Doesn't assume normal distributions
+- **Robust**: Works well with small to medium datasets
+- **Feature Engineering**: Can handle non-linear relationships with polynomial features
+- **Multiclass Support**: Extends naturally to multiple classes
+- **Statistical Foundation**: Well-established theoretical properties
+
+**Weaknesses:**
+- **Linear Decision Boundary**: Can't capture complex non-linear patterns
+- **Outlier Sensitivity**: Extreme values can skew the decision boundary
+- **Feature Scaling**: Coefficients depend on feature scales
+- **Correlated Features**: Can cause unstable coefficient estimates
+- **Limited Complexity**: Struggles with highly non-linear decision boundaries
+- **Convergence Issues**: May not converge with perfect separation
+
+**When to Use Logistic Regression:**
+- Binary or multiclass classification problems
+- Need probabilistic predictions (confidence scores)
+- Want interpretable model (business decisions, regulations)
 - Linear decision boundary is reasonable
 - Small to medium datasets
+- Baseline model for comparison
+- When statistical inference is important
+
+**When NOT to Use Logistic Regression:**
+- Highly non-linear decision boundaries
+- Very high-dimensional data
+- When maximum accuracy is required
+- Complex feature interactions
+- When interpretability is not important
+
+**Key Concepts Deep Dive:**
+
+1. **Odds and Log-Odds**:
+   - Odds = P/(1-P) (probability of success / probability of failure)
+   - Log-odds = ln(P/(1-P)) (logit function)
+   - Odds ratio = e^(βᵢ) (how odds change with one unit increase in xᵢ)
+   - Log-odds are linear in features: ln(P/(1-P)) = β₀ + β₁x₁ + ... + βₙxₙ
+
+2. **Decision Boundary**:
+   - Linear hyperplane in feature space
+   - Defined by: β₀ + β₁x₁ + ... + βₙxₙ = 0
+   - Points on one side → class 0, other side → class 1
+   - Can be visualized in 2D/3D feature spaces
+
+3. **Threshold Selection**:
+   - Default threshold: 0.5 (equal cost for both errors)
+   - Custom thresholds based on business requirements
+   - ROC curve helps find optimal threshold
+   - Precision-Recall curve for imbalanced datasets
 
 ```python
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
-# Basic logistic regression
-model = LogisticRegression(random_state=42)
-model.fit(X_train, y_train)
+# Deep Dive into Logistic Regression Implementation:
+#
+# The LogisticRegression class in sklearn uses:
+# - Maximum Likelihood Estimation by default
+# - L-BFGS solver for small datasets (fast convergence)
+# - Liblinear solver for large datasets
+# - Automatic regularization (L2 by default)
 
-# Predictions and probabilities
-predictions = model.predict(X_test)
-probabilities = model.predict_proba(X_test)
+# Create sample data
+np.random.seed(42)
+n_samples = 1000
+X = np.random.randn(n_samples, 2) * 2
+# Create linearly separable data
+y = (X[:, 0] + X[:, 1] > 0).astype(int)
 
-# Evaluate performance
-print(classification_report(y_test, predictions))
-print(f"AUC Score: {roc_auc_score(y_test, probabilities[:, 1]):.3f}")
+# Deep Dive into Model Creation:
+#
+# LogisticRegression parameters:
+# - C: Inverse regularization strength (smaller = more regularization)
+# - penalty: 'l1', 'l2', 'elasticnet', or 'none'
+# - solver: Algorithm to use ('lbfgs', 'liblinear', 'saga', etc.)
+# - max_iter: Maximum iterations for convergence
+# - random_state: For reproducible results
+model = LogisticRegression(C=1.0, penalty='l2', solver='lbfgs', max_iter=1000, random_state=42)
 
-# Access coefficients and interpretability
-print(f"Intercept: {model.intercept_[0]:.3f}")
-print("Coefficients:")
-for feature, coef in zip(X.columns, model.coef_[0]):
-    print(f"  {feature}: {coef:.3f}")
+# Deep Dive into Training Process:
+#
+# 1. **Data Preparation**: 
+#    - X should be 2D array (samples, features)
+#    - y should be 1D array with binary values (0, 1)
+#    - No missing values allowed
+#    - Features should be scaled for meaningful coefficients
+#
+# 2. **Fitting Process**:
+#    - Maximizes log-likelihood function
+#    - Uses gradient-based optimization
+#    - Converges when gradient is sufficiently small
+#    - Stores coefficients and intercept
+model.fit(X, y)
 
-# Calculate odds ratios
+# Deep Dive into Predictions:
+#
+# Binary predictions:
+# - Uses threshold of 0.5 by default
+# - Returns 0 or 1 for each sample
+predictions = model.predict(X)
+
+# Probability predictions:
+# - Returns probability for each class
+# - Shape: (n_samples, n_classes)
+# - Sum to 1 for each sample
+probabilities = model.predict_proba(X)
+
+# Deep Dive into Model Properties:
+#
+# Coefficients (β₁, β₂, ..., βₙ):
+# - Show the effect of each feature on log-odds
+# - Units: change in log-odds per unit change in feature
+# - Sign indicates direction of relationship
+print(f"Coefficients: {model.coef_[0]}")
+
+# Intercept (β₀):
+# - Baseline log-odds when all features are zero
+# - Often not meaningful if features can't be zero
+print(f"Intercept: {model.intercept_[0]}")
+
+# Deep Dive into Odds Ratios:
+#
+# Odds ratios = e^(coefficients):
+# - Show how odds change with one unit increase in feature
+# - Odds ratio > 1: increases odds of positive class
+# - Odds ratio < 1: decreases odds of positive class
+# - Odds ratio = 1: no effect
 odds_ratios = np.exp(model.coef_[0])
-print("Odds Ratios:")
-for feature, odds in zip(X.columns, odds_ratios):
-    print(f"  {feature}: {odds:.3f}")
+print(f"Odds Ratios: {odds_ratios}")
 
-# Feature importance (absolute coefficient values)
+# Deep Dive into Evaluation:
+#
+# Classification Report:
+# - Precision: TP / (TP + FP) - accuracy of positive predictions
+# - Recall: TP / (TP + FN) - sensitivity, ability to find positives
+# - F1-score: Harmonic mean of precision and recall
+# - Support: Number of samples in each class
+print("Classification Report:")
+print(classification_report(y, predictions))
+
+# Confusion Matrix:
+# - Shows true vs predicted classifications
+# - Diagonal elements are correct predictions
+# - Off-diagonal elements are errors
+cm = confusion_matrix(y, predictions)
+print(f"Confusion Matrix:\n{cm}")
+
+# ROC AUC Score:
+# - Area under ROC curve
+# - Range: 0 to 1 (higher is better)
+# - 0.5 = random classifier, 1.0 = perfect classifier
+auc_score = roc_auc_score(y, probabilities[:, 1])
+print(f"ROC AUC Score: {auc_score:.3f}")
+
+# Deep Dive into ROC Curve:
+#
+# ROC curve plots:
+# - True Positive Rate (TPR) vs False Positive Rate (FPR)
+# - TPR = Recall = TP / (TP + FN)
+# - FPR = FP / (FP + TN)
+# - Shows trade-off between sensitivity and specificity
+fpr, tpr, thresholds = roc_curve(y, probabilities[:, 1])
+
+plt.figure(figsize=(10, 6))
+plt.subplot(1, 2, 1)
+plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {auc_score:.3f})')
+plt.plot([0, 1], [0, 1], 'k--', label='Random Classifier')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+
+# Deep Dive into Decision Boundary Visualization:
+#
+# Decision boundary is where P(y=1|x) = 0.5
+# This occurs when linear combination = 0
+# β₀ + β₁x₁ + β₂x₂ = 0
+# Solving for x₂: x₂ = -(β₀ + β₁x₁) / β₂
+
+plt.subplot(1, 2, 2)
+# Plot data points
+plt.scatter(X[y==0, 0], X[y==0, 1], c='blue', label='Class 0', alpha=0.6)
+plt.scatter(X[y==1, 0], X[y==1, 1], c='red', label='Class 1', alpha=0.6)
+
+# Plot decision boundary
+x1_min, x1_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+x1_range = np.linspace(x1_min, x1_max, 100)
+x2_boundary = -(model.intercept_[0] + model.coef_[0][0] * x1_range) / model.coef_[0][1]
+plt.plot(x1_range, x2_boundary, 'k-', linewidth=2, label='Decision Boundary')
+
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.title('Decision Boundary')
+plt.legend()
+plt.show()
+
+# Deep Dive into Threshold Selection:
+#
+# Different thresholds affect precision and recall:
+# - Lower threshold: Higher recall, lower precision
+# - Higher threshold: Lower recall, higher precision
+# - Choose based on business requirements
+
+thresholds_to_test = [0.1, 0.3, 0.5, 0.7, 0.9]
+print("\nThreshold Analysis:")
+for thresh in thresholds_to_test:
+    custom_preds = (probabilities[:, 1] > thresh).astype(int)
+    precision = np.sum((custom_preds == 1) & (y == 1)) / np.sum(custom_preds == 1)
+    recall = np.sum((custom_preds == 1) & (y == 1)) / np.sum(y == 1)
+    print(f"Threshold {thresh}: Precision = {precision:.3f}, Recall = {recall:.3f}")
+
+# Deep Dive into Feature Importance:
+#
+# For logistic regression, feature importance is coefficient magnitude
+# - Larger |coefficient| = more important feature
+# - But coefficients depend on feature scales
+# - Standardize features for fair comparison
 feature_importance = np.abs(model.coef_[0])
-importance_df = pd.DataFrame({
-    'feature': X.columns,
-    'coefficient': model.coef_[0],
-    'odds_ratio': odds_ratios,
-    'importance': feature_importance
-}).sort_values('importance', ascending=False)
+print(f"\nFeature Importance: {feature_importance}")
 
-# Multiclass logistic regression
-multiclass_model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
-multiclass_model.fit(X_train, y_train_multiclass)
+# Deep Dive into Multiclass Logistic Regression:
+#
+# Two approaches:
+# 1. One-vs-Rest (OvR): Train separate binary classifier for each class
+# 2. Multinomial: Single model with softmax activation
 
-# Custom threshold for binary classification
-threshold = 0.3  # Lower threshold for more sensitive classification
-custom_predictions = (probabilities[:, 1] > threshold).astype(int)
+# Create multiclass data
+X_multi = np.random.randn(200, 2) * 2
+y_multi = (X_multi[:, 0] + X_multi[:, 1] + np.random.randn(200) * 0.5).astype(int) % 3
+
+# One-vs-Rest approach
+ovr_model = LogisticRegression(multi_class='ovr', solver='lbfgs')
+ovr_model.fit(X_multi, y_multi)
+
+# Multinomial approach
+multinomial_model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+multinomial_model.fit(X_multi, y_multi)
+
+print(f"OvR Model Coefficients Shape: {ovr_model.coef_.shape}")
+print(f"Multinomial Model Coefficients Shape: {multinomial_model.coef_.shape}")
+
+# Deep Dive into Model Interpretation:
+#
+# Example interpretation:
+# - Coefficient = 0.5 means: "One unit increase in feature increases log-odds by 0.5"
+# - Odds ratio = 1.65 means: "One unit increase multiplies odds by 1.65"
+# - Probability = 0.8 means: "80% chance of positive class"
+
+print(f"\nModel Interpretation:")
+print(f"- Feature 1 coefficient: {model.coef_[0][0]:.3f}")
+print(f"- Feature 1 odds ratio: {np.exp(model.coef_[0][0]):.3f}")
+print(f"- Average predicted probability: {np.mean(probabilities[:, 1]):.3f}")
 ```
 
 #### 3. Decision Trees
@@ -1803,8 +2205,65 @@ loss = criterion(outputs, targets) + l2_regularization(model)
 ### Key Deep Learning Architectures
 
 #### 1. Convolutional Neural Networks (CNNs)
-**Purpose**: Image processing and computer vision
-**Key Components**: Convolutional layers, pooling layers, fully connected layers
+
+**Deep Dive into CNNs:**
+
+Convolutional Neural Networks are the backbone of modern computer vision and image processing. They were inspired by the human visual cortex and revolutionized how machines understand images. Unlike traditional neural networks that treat each pixel independently, CNNs understand that nearby pixels are related and that certain patterns (like edges, textures, shapes) are important regardless of where they appear in an image.
+
+**What CNNs Do:**
+CNNs automatically learn hierarchical feature representations from raw pixel data. They start by detecting simple patterns (edges, corners) in early layers, then combine these into more complex patterns (textures, shapes) in middle layers, and finally recognize complete objects in deeper layers. This mimics how humans process visual information - we first see edges and lines, then shapes, then objects.
+
+**Why CNNs Are Used:**
+- **Spatial Invariance**: A cat is still a cat whether it's in the top-left or bottom-right of an image
+- **Parameter Sharing**: The same filter can detect edges anywhere in the image, dramatically reducing parameters
+- **Hierarchical Learning**: Automatically builds from simple to complex features
+- **Translation Invariance**: Recognizes patterns regardless of their position
+
+**How CNNs Work:**
+
+1. **Convolutional Layers**: Apply filters (kernels) that slide across the image
+   - Each filter detects specific patterns (edges, textures, shapes)
+   - Multiple filters create feature maps showing where patterns occur
+   - Mathematical operation: (input * filter) + bias = feature map
+
+2. **Pooling Layers**: Reduce spatial dimensions while preserving important information
+   - Max pooling: Takes maximum value in each region (preserves strongest features)
+   - Average pooling: Takes average value (smoother representation)
+   - Reduces computational load and prevents overfitting
+
+3. **Fully Connected Layers**: Make final classification decisions
+   - Flatten feature maps into vectors
+   - Apply traditional neural network layers
+   - Output class probabilities
+
+**Strengths:**
+- **Excellent for Images**: Designed specifically for 2D/3D spatial data
+- **Parameter Efficiency**: Shared weights dramatically reduce parameters
+- **Translation Invariant**: Recognizes patterns anywhere in the image
+- **Hierarchical Features**: Automatically learns from simple to complex patterns
+- **Proven Performance**: State-of-the-art results on image tasks
+- **Robust**: Handles variations in lighting, angle, scale
+
+**Weaknesses:**
+- **Fixed Input Size**: Requires all images to be the same size
+- **Computational Intensive**: Especially for high-resolution images
+- **Limited to Spatial Data**: Not naturally suited for non-spatial sequences
+- **Black Box**: Difficult to interpret what features are learned
+- **Memory Intensive**: Large models require significant GPU memory
+
+**When to Use CNNs:**
+- Image classification, object detection, segmentation
+- Medical imaging analysis
+- Satellite image processing
+- Video analysis (treating frames as images)
+- Any task involving spatial relationships in data
+
+**When NOT to Use CNNs:**
+- Text processing (use RNNs/Transformers instead)
+- Time series without spatial structure
+- Tabular data without spatial relationships
+- When interpretability is crucial
+
 ```python
 import torch.nn as nn
 import torch.nn.functional as F
@@ -1812,45 +2271,385 @@ import torch.nn.functional as F
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
+        # Deep Dive into CNN Architecture:
+        #
+        # Convolutional Layer 1:
+        # - Input: 3 channels (RGB), Output: 32 feature maps
+        # - Kernel size: 3x3 (detects small patterns like edges)
+        # - Stride: 1 (moves 1 pixel at a time)
+        # - Padding: 0 (no padding, so output size = input_size - kernel_size + 1)
+        # - This layer learns 32 different 3x3 filters to detect various patterns
         self.conv1 = nn.Conv2d(3, 32, 3)
+        
+        # Max Pooling Layer:
+        # - Kernel size: 2x2 (reduces spatial dimensions by half)
+        # - Stride: 2 (non-overlapping pooling)
+        # - Purpose: Reduces computational load, prevents overfitting, 
+        #   makes model more robust to small translations
+        # - Takes maximum value in each 2x2 region (preserves strongest features)
         self.pool = nn.MaxPool2d(2, 2)
+        
+        # Fully Connected Layer 1:
+        # - Input: 32 * 16 * 16 = 8192 features (flattened feature maps)
+        # - Output: 128 neurons
+        # - Purpose: Combines all learned features for classification
+        # - ReLU activation adds non-linearity
         self.fc1 = nn.Linear(32 * 16 * 16, 128)
+        
+        # Output Layer:
+        # - Input: 128 features
+        # - Output: 10 classes (e.g., for CIFAR-10 dataset)
+        # - No activation function (raw logits for cross-entropy loss)
         self.fc2 = nn.Linear(128, 10)
     
     def forward(self, x):
+        # Deep Dive into Forward Pass:
+        #
+        # Step 1: First Convolution + Pooling
+        # - Apply 32 different 3x3 filters to detect various patterns
+        # - ReLU activation: max(0, x) - introduces non-linearity, 
+        #   helps with vanishing gradient problem
+        # - Max pooling: reduces spatial dimensions, keeps strongest features
+        # - Result: 32 feature maps with reduced spatial size
         x = self.pool(F.relu(self.conv1(x)))
+        
+        # Step 2: Flatten Feature Maps
+        # - Convert 2D feature maps to 1D vector for fully connected layers
+        # - Reshape from (batch_size, 32, height, width) to (batch_size, 32*height*width)
+        # - This preserves all learned spatial features for classification
         x = x.view(-1, 32 * 16 * 16)
+        
+        # Step 3: First Fully Connected Layer
+        # - Combines all learned features from convolutional layers
+        # - ReLU activation adds non-linearity
+        # - This layer learns complex combinations of simple features
         x = F.relu(self.fc1(x))
+        
+        # Step 4: Output Layer
+        # - Final classification layer
+        # - No activation function (raw logits)
+        # - Softmax will be applied during loss calculation
         x = self.fc2(x)
+        
         return x
+
+# Deep Dive into CNN Training Process:
+#
+# 1. **Forward Pass**: 
+#    - Input image → Convolution → ReLU → Pooling → Flatten → FC → Output
+#    - Each convolution filter learns to detect specific patterns
+#    - Pooling reduces spatial dimensions while preserving important features
+#
+# 2. **Backward Pass**:
+#    - Gradients flow back through the network
+#    - Convolutional filters are updated to better detect relevant patterns
+#    - Shared weights mean each filter learns to detect patterns anywhere in the image
+#
+# 3. **Feature Learning**:
+#    - Early layers: Learn simple patterns (edges, corners, textures)
+#    - Middle layers: Learn complex patterns (shapes, objects parts)
+#    - Late layers: Learn complete objects and high-level concepts
+#
+# 4. **Why This Works**:
+#    - Spatial locality: Nearby pixels are related
+#    - Translation invariance: Same pattern anywhere in image
+#    - Hierarchical learning: Build complex features from simple ones
+#    - Parameter sharing: Same filter used everywhere
 ```
 
 #### 2. Recurrent Neural Networks (RNNs)
-**Purpose**: Sequential data (text, time series)
-**Key Components**: LSTM, GRU cells for memory
+
+**Deep Dive into RNNs:**
+
+Recurrent Neural Networks are designed to handle sequential data where the order and context matter. Unlike CNNs that excel at spatial patterns, RNNs excel at temporal patterns - understanding how information flows through time. They were inspired by how humans process sequences like sentences, where understanding each word depends on the words that came before it.
+
+**What RNNs Do:**
+RNNs process sequences step by step, maintaining a "memory" of what they've seen so far. At each time step, they take the current input and their previous hidden state to produce an output and update their memory. This allows them to understand context and dependencies across time, making them perfect for tasks like language modeling, speech recognition, and time series prediction.
+
+**Why RNNs Are Used:**
+- **Sequential Processing**: Natural fit for data that comes in sequences
+- **Memory**: Can remember information from earlier in the sequence
+- **Variable Length**: Can handle sequences of different lengths
+- **Context Awareness**: Each prediction considers the full history
+- **Temporal Patterns**: Excellent at finding patterns across time
+
+**How RNNs Work:**
+
+1. **Basic RNN Structure**: 
+   - Hidden state (h_t) carries information from previous time steps
+   - At each step: h_t = f(W_hh * h_{t-1} + W_xh * x_t + b_h)
+   - Output: y_t = W_hy * h_t + b_y
+   - The same weights are reused at every time step (parameter sharing)
+
+2. **LSTM (Long Short-Term Memory)**:
+   - Solves the vanishing gradient problem of basic RNNs
+   - Uses gates to control information flow:
+     - **Forget Gate**: Decides what to discard from cell state
+     - **Input Gate**: Decides what new information to store
+     - **Output Gate**: Decides what parts of cell state to output
+   - Cell state acts as a "conveyor belt" carrying information across time
+
+3. **GRU (Gated Recurrent Unit)**:
+   - Simpler version of LSTM with fewer parameters
+   - Combines forget and input gates into update gate
+   - Uses reset gate to control how much past information to forget
+   - Often performs similarly to LSTM with less computational cost
+
+**Strengths:**
+- **Sequential Modeling**: Natural fit for time series and text data
+- **Memory**: Can remember long-term dependencies (especially LSTM/GRU)
+- **Flexible Input**: Can handle variable-length sequences
+- **Context Awareness**: Each prediction considers full sequence history
+- **Proven Performance**: Excellent results on NLP and time series tasks
+- **Interpretable**: Can analyze what the model remembers over time
+
+**Weaknesses:**
+- **Slow Training**: Sequential processing prevents parallelization
+- **Vanishing Gradients**: Basic RNNs struggle with long sequences
+- **Limited Context**: Even LSTM/GRU have limits on how far back they can remember
+- **Computational Cost**: Processing long sequences can be expensive
+- **Difficulty with Long Dependencies**: Still challenging for very long sequences
+- **Not Bidirectional by Default**: Can't see future context
+
+**When to Use RNNs:**
+- Natural language processing (text generation, translation, sentiment analysis)
+- Time series forecasting and analysis
+- Speech recognition and synthesis
+- Sequence-to-sequence tasks
+- Any task where order and context matter
+
+**When NOT to Use RNNs:**
+- Image processing (use CNNs instead)
+- Tabular data without temporal structure
+- When you need to process entire sequence simultaneously (use Transformers)
+- Very long sequences (consider Transformers or specialized architectures)
+
 ```python
 import torch.nn as nn
 
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(RNN, self).__init__()
+        # Deep Dive into RNN Architecture:
+        #
+        # LSTM Layer:
+        # - input_size: Number of features in each input timestep
+        # - hidden_size: Number of neurons in hidden state (memory capacity)
+        # - batch_first=True: Input format is (batch, sequence, features)
+        # - LSTM solves vanishing gradient problem with gating mechanisms
+        # - Can remember long-term dependencies better than basic RNN
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        
+        # Fully Connected Output Layer:
+        # - Takes final hidden state and converts to output predictions
+        # - hidden_size: Number of features from LSTM
+        # - output_size: Number of classes/values to predict
+        # - This layer learns how to interpret the learned sequence representation
         self.fc = nn.Linear(hidden_size, output_size)
     
     def forward(self, x):
-        lstm_out, _ = self.lstm(x)
+        # Deep Dive into RNN Forward Pass:
+        #
+        # Step 1: LSTM Processing
+        # - Input x: (batch_size, sequence_length, input_size)
+        # - LSTM processes each timestep sequentially
+        # - lstm_out: (batch_size, sequence_length, hidden_size) - outputs at each timestep
+        # - (hidden, cell): Final hidden and cell states
+        # - LSTM maintains internal memory through cell state
+        # - Gates control what to remember, forget, and output
+        lstm_out, (hidden, cell) = self.lstm(x)
+        
+        # Step 2: Extract Final Output
+        # - lstm_out[:, -1, :]: Take output from last timestep only
+        # - This represents the final "understanding" of the entire sequence
+        # - Alternative: Could use all timesteps for sequence-to-sequence tasks
+        # - The final hidden state contains information from the entire sequence
         output = self.fc(lstm_out[:, -1, :])
+        
         return output
+
+# Deep Dive into RNN Training Process:
+#
+# 1. **Forward Pass**:
+#    - Process sequence timestep by timestep
+#    - Each timestep: input + previous hidden state → new hidden state + output
+#    - LSTM gates control information flow:
+#      * Forget gate: What to discard from memory
+#      * Input gate: What new information to store
+#      * Output gate: What to output based on current memory
+#
+# 2. **Backward Pass (Backpropagation Through Time - BPTT)**:
+#    - Gradients flow back through time steps
+#    - LSTM gates help prevent vanishing gradients
+#    - Gradients can flow through cell state even when hidden state gradients vanish
+#
+# 3. **Memory Management**:
+#    - Cell state: Long-term memory (conveyor belt)
+#    - Hidden state: Short-term memory (working memory)
+#    - Gates: Control mechanisms for memory updates
+#
+# 4. **Why LSTM/GRU Work Better**:
+#    - Solve vanishing gradient problem
+#    - Can learn long-term dependencies
+#    - Selective memory: remember important, forget irrelevant
+#    - Better gradient flow through time
+
+# Example Usage Scenarios:
+#
+# 1. **Text Classification**:
+#    - Input: Sequence of word embeddings
+#    - Output: Sentiment (positive/negative) or topic classification
+#    - Model learns to understand context and meaning
+#
+# 2. **Time Series Forecasting**:
+#    - Input: Historical values (stock prices, temperature, etc.)
+#    - Output: Future value prediction
+#    - Model learns temporal patterns and trends
+#
+# 3. **Sequence Generation**:
+#    - Input: Previous tokens/characters
+#    - Output: Next token/character
+#    - Model learns language patterns and grammar
+#
+# 4. **Machine Translation**:
+#    - Input: Source language sentence
+#    - Output: Target language sentence
+#    - Model learns to map between languages while preserving meaning
 ```
 
 #### 3. Transformers
-**Purpose**: Natural language processing, attention mechanisms
-**Key Components**: Self-attention, multi-head attention
+
+**Deep Dive into Transformers:**
+
+Transformers revolutionized natural language processing by introducing the attention mechanism, which allows models to focus on relevant parts of the input sequence when making predictions. Unlike RNNs that process sequences sequentially, Transformers process all positions simultaneously, making them much faster to train and more effective at capturing long-range dependencies.
+
+**What Transformers Do:**
+Transformers use self-attention to understand relationships between all words in a sequence simultaneously. They can "attend" to any position in the input sequence, allowing them to capture complex dependencies that RNNs struggle with. This makes them incredibly powerful for tasks like machine translation, text generation, and understanding context.
+
+**Why Transformers Are Used:**
+- **Parallel Processing**: Can process entire sequences simultaneously (unlike RNNs)
+- **Long-Range Dependencies**: Can capture relationships between distant words
+- **Attention Mechanism**: Focuses on relevant parts of input
+- **Scalability**: Can be scaled to massive sizes (GPT-3, BERT)
+- **Transfer Learning**: Pre-trained models can be fine-tuned for specific tasks
+- **State-of-the-Art Performance**: Achieve best results on most NLP tasks
+
+**How Transformers Work:**
+
+1. **Self-Attention Mechanism**:
+   - Computes attention scores between all pairs of positions
+   - Attention(Q,K,V) = softmax(QK^T/√d_k)V
+   - Q (Query): What am I looking for?
+   - K (Key): What do I have to offer?
+   - V (Value): What is the actual content?
+
+2. **Multi-Head Attention**:
+   - Runs multiple attention mechanisms in parallel
+   - Each head can focus on different types of relationships
+   - Concatenates outputs from all heads
+   - Allows model to attend to different representation subspaces
+
+3. **Positional Encoding**:
+   - Since Transformers don't have inherent notion of sequence order
+   - Adds positional information to input embeddings
+   - Uses sinusoidal functions to encode position
+
+4. **Feed-Forward Networks**:
+   - Applied to each position separately
+   - Two linear transformations with ReLU activation
+   - Allows for complex transformations of attended information
+
+**Strengths:**
+- **Parallelization**: Much faster training than RNNs
+- **Long-Range Dependencies**: Excellent at capturing distant relationships
+- **Scalability**: Can be scaled to billions of parameters
+- **Transfer Learning**: Pre-trained models work well on many tasks
+- **Interpretability**: Attention weights show what the model focuses on
+- **Flexibility**: Can be adapted for many different tasks
+
+**Weaknesses:**
+- **Computational Cost**: Quadratic complexity with sequence length
+- **Memory Intensive**: Requires significant memory for long sequences
+- **Data Hungry**: Need large amounts of data to train effectively
+- **Black Box**: Difficult to understand internal representations
+- **Position Encoding**: Limited ability to generalize to longer sequences than trained on
+
+**When to Use Transformers:**
+- Natural language processing tasks
+- Machine translation
+- Text generation and summarization
+- Question answering systems
+- When you need to capture long-range dependencies
+- When you have large amounts of data
+
+**When NOT to Use Transformers:**
+- Very short sequences (RNNs might be simpler)
+- When computational resources are limited
+- When you need real-time processing of very long sequences
+- Small datasets (might overfit)
+
 ```python
 from transformers import AutoTokenizer, AutoModel
 
+# Deep Dive into Transformer Usage:
+#
+# Pre-trained Models:
+# - BERT: Bidirectional encoder, great for understanding tasks
+# - GPT: Autoregressive decoder, great for generation tasks
+# - T5: Encoder-decoder, great for text-to-text tasks
+# - These models are trained on massive datasets and can be fine-tuned
+
+# Tokenizer:
+# - Converts text to numerical tokens that the model can understand
+# - Handles subword tokenization (BPE, WordPiece)
+# - Manages special tokens (CLS, SEP, PAD, UNK)
+# - Ensures consistent input format
 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+
+# Model:
+# - Pre-trained transformer model
+# - Contains millions/billions of parameters
+# - Learned representations from large-scale pre-training
+# - Can be fine-tuned for specific tasks
 model = AutoModel.from_pretrained('bert-base-uncased')
+
+# Deep Dive into Transformer Architecture:
+#
+# 1. **Input Processing**:
+#    - Text → Tokens → Embeddings + Positional Encoding
+#    - Each token gets a dense vector representation
+#    - Positional encoding adds sequence order information
+#
+# 2. **Self-Attention**:
+#    - Computes relationships between all token pairs
+#    - Attention weights determine how much each token influences others
+#    - Allows model to focus on relevant context
+#
+# 3. **Multi-Head Attention**:
+#    - Multiple attention mechanisms run in parallel
+#    - Each head can learn different types of relationships
+#    - Concatenated and projected to final dimension
+#
+# 4. **Feed-Forward Networks**:
+#    - Applied to each position independently
+#    - Two linear layers with ReLU activation
+#    - Allows for complex transformations
+#
+# 5. **Layer Normalization & Residual Connections**:
+#    - Layer norm stabilizes training
+#    - Residual connections help with gradient flow
+#    - Applied after each sub-layer
+
+# Example Usage:
+text = "The quick brown fox jumps over the lazy dog"
+inputs = tokenizer(text, return_tensors='pt', padding=True, truncation=True)
+outputs = model(**inputs)
+
+# Deep Dive into Output:
+# - outputs.last_hidden_state: Hidden states for each token
+# - outputs.pooler_output: Pooled representation (for classification)
+# - Each token gets a contextualized representation
+# - Representations capture both local and global context
 ```
 
 ---
